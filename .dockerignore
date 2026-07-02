@@ -1,0 +1,8 @@
+target
+tmp
+data
+.env
+.git
+.gitignore
+README.md
+*.md
