@@ -54,6 +54,10 @@ async fn main() -> anyhow::Result<()> {
         );
     }
     tracing::info!("enabled providers: {:?}", registry.enabled_backends());
+    tracing::info!(
+        cookies_file = ?config.ytdlp_cookies_file,
+        "cookies config"
+    );
 
     let (tx, rx) = mpsc::channel::<worker::TaskCommand>(config.max_concurrent_tasks * 2);
 
@@ -70,6 +74,9 @@ async fn main() -> anyhow::Result<()> {
         .route("/api/identify", post(http::identify))
         .route("/api/result/{task_id}", get(http::result))
         .route("/api/health", get(http::health))
+        .route("/api/cookies", post(http::save_cookies))
+        .route("/api/cookies/status", get(http::cookies_status))
+        .route("/auth-insta", get(http::auth_insta_page))
         .fallback_service(tower_http::services::ServeDir::new("static"))
         .layer(CorsLayer::permissive())
         .layer(TraceLayer::new_for_http())

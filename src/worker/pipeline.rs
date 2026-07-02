@@ -22,6 +22,7 @@ pub async fn run_worker(
         &config.ytdlp_path,
         &config.temp_dir,
         config.ytdlp_extra_args.clone(),
+        config.ytdlp_cookies_file.clone(),
     ));
     let audio = Arc::new(AudioProcessor::new(
         &config.ffmpeg_path,

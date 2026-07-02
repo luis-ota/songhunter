@@ -89,6 +89,8 @@ pub struct Config {
     pub ffmpeg_path: String,
     #[serde(default)]
     pub ytdlp_extra_args: Vec<String>,
+    #[serde(default)]
+    pub ytdlp_cookies_file: Option<String>,
 }
 
 impl Config {
@@ -101,6 +103,13 @@ impl Config {
             .build()?;
 
         let mut config: Self = cfg.try_deserialize()?;
+
+        if config.ytdlp_cookies_file.is_none()
+            && let Ok(cookies) = std::env::var("SONGFINDER_YTDLP_COOKIES_FILE")
+            && !cookies.is_empty()
+        {
+            config.ytdlp_cookies_file = Some(cookies);
+        }
 
         if config.acoustid.is_none()
             && let Ok(api_key) = std::env::var("SONGFINDER_ACOUSTID__API_KEY")

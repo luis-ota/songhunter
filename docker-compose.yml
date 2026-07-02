@@ -11,6 +11,8 @@ services:
     volumes:
       - ./data:/app/data
       - ./tmp:/app/tmp
+      # Para Instagram e outros sites que exigem login, monte um cookies.txt:
+      # - ./cookies.txt:/app/cookies.txt:ro
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]

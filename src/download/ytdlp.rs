@@ -7,6 +7,7 @@ pub struct Downloader {
     ytdlp_path: String,
     temp_dir: PathBuf,
     extra_args: Vec<String>,
+    cookies_file: Option<String>,
 }
 
 impl Downloader {
@@ -14,11 +15,13 @@ impl Downloader {
         ytdlp_path: impl Into<String>,
         temp_dir: impl AsRef<Path>,
         extra_args: Vec<String>,
+        cookies_file: Option<String>,
     ) -> Self {
         Self {
             ytdlp_path: ytdlp_path.into(),
             temp_dir: temp_dir.as_ref().to_path_buf(),
             extra_args,
+            cookies_file,
         }
     }
 
@@ -46,7 +49,11 @@ impl Downloader {
             "--no-warnings",
         ]);
 
-        // Args extras configuráveis via .env
+        if let Some(cookies) = &self.cookies_file {
+            cmd.arg("--cookies");
+            cmd.arg(cookies);
+        }
+
         for arg in &self.extra_args {
             cmd.arg(arg);
         }
