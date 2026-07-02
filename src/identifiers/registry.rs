@@ -28,9 +28,7 @@ impl IdentifierRegistry {
         if backends.is_empty() {
             // Fallback: Shazam sem config funciona na API web pública.
             backends.push(Arc::new(ShazamIdentifier::new(
-                crate::config::ShazamConfig {
-                    base_url: crate::config::default_shazam_url(),
-                },
+                crate::config::ShazamConfig {},
             )));
         }
 

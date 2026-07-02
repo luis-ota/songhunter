@@ -6,13 +6,19 @@ use tracing::{debug, info};
 pub struct Downloader {
     ytdlp_path: String,
     temp_dir: PathBuf,
+    extra_args: Vec<String>,
 }
 
 impl Downloader {
-    pub fn new(ytdlp_path: impl Into<String>, temp_dir: impl AsRef<Path>) -> Self {
+    pub fn new(
+        ytdlp_path: impl Into<String>,
+        temp_dir: impl AsRef<Path>,
+        extra_args: Vec<String>,
+    ) -> Self {
         Self {
             ytdlp_path: ytdlp_path.into(),
             temp_dir: temp_dir.as_ref().to_path_buf(),
+            extra_args,
         }
     }
 
@@ -38,8 +44,14 @@ impl Downloader {
             &output_template_str,
             "--newline",
             "--no-warnings",
-            url,
         ]);
+
+        // Args extras configuráveis via .env
+        for arg in &self.extra_args {
+            cmd.arg(arg);
+        }
+
+        cmd.arg(url);
 
         debug!(?cmd, "running yt-dlp");
         let output = cmd

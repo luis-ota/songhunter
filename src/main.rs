@@ -29,7 +29,7 @@ async fn main() -> anyhow::Result<()> {
     tracing_subscriber::registry()
         .with(
             tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| "songfinder=info,tower_http=info".into()),
+                .unwrap_or_else(|_| "songhunter=info,tower_http=info".into()),
         )
         .with(tracing_subscriber::fmt::layer())
         .init();
@@ -42,6 +42,17 @@ async fn main() -> anyhow::Result<()> {
     let cache = Arc::new(Cache::new("./data/cache.db", config.cache_ttl_hours).await?);
     let registry = Arc::new(IdentifierRegistry::from_config(&config));
 
+    tracing::info!(
+        acoustid_configured = config.acoustid.is_some(),
+        "config loaded"
+    );
+    if let Some(ref ac) = config.acoustid {
+        tracing::info!(
+            key_len = ac.api_key.len(),
+            url = %ac.url,
+            "acoustid config"
+        );
+    }
     tracing::info!("enabled providers: {:?}", registry.enabled_backends());
 
     let (tx, rx) = mpsc::channel::<worker::TaskCommand>(config.max_concurrent_tasks * 2);

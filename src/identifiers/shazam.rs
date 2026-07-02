@@ -3,21 +3,19 @@ use crate::identifiers::backend::Identifier;
 use crate::models::SongMatch;
 use async_trait::async_trait;
 use std::path::Path;
+use tokio::process::Command;
 use tracing::{info, warn};
 
 pub struct ShazamIdentifier {
-    config: ShazamConfig,
-    client: reqwest::Client,
+    python_path: String,
+    script_path: String,
 }
 
 impl ShazamIdentifier {
-    pub fn new(config: ShazamConfig) -> Self {
+    pub fn new(_config: ShazamConfig) -> Self {
         Self {
-            config,
-            client: reqwest::Client::builder()
-                .timeout(std::time::Duration::from_secs(15))
-                .build()
-                .expect("reqwest client"),
+            python_path: "python3".into(),
+            script_path: "/app/scripts/shazam_recognize.py".into(),
         }
     }
 }
@@ -34,91 +32,63 @@ impl Identifier for ShazamIdentifier {
 
     async fn identify(&self, wav_path: &Path) -> anyhow::Result<Vec<SongMatch>> {
         info!("identifying with Shazam");
-        let audio_bytes = tokio::fs::read(wav_path).await?;
 
-        let uuid = uuid::Uuid::new_v4();
-        let url = format!("{}/{}", self.config.base_url.trim_end_matches('/'), uuid);
+        let mut cmd = Command::new(&self.python_path);
+        cmd.args([
+            self.script_path.as_str(),
+            wav_path.to_string_lossy().as_ref(),
+        ]);
 
-        let part = reqwest::multipart::Part::bytes(audio_bytes)
-            .file_name("audio.wav")
-            .mime_str("audio/wav")?;
-
-        let form = reqwest::multipart::Form::new().part("audio", part);
-
-        let resp = match self
-            .client
-            .post(&url)
-            .header("User-Agent", "shazamio/0.0.1")
-            .multipart(form)
-            .send()
-            .await
-        {
-            Ok(r) => r,
+        let output = match cmd.output().await {
+            Ok(o) => o,
             Err(e) => {
-                warn!("Shazam request failed: {}", e);
+                warn!("shazam subprocess failed to execute: {}", e);
                 return Ok(Vec::new());
             }
         };
 
-        if !resp.status().is_success() {
-            warn!("Shazam returned status {}", resp.status());
+        if !output.status.success() {
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            warn!("shazam subprocess exited with {}: {stderr}", output.status);
             return Ok(Vec::new());
         }
 
-        let data: serde_json::Value = resp.json().await?;
-        let mut matches = Vec::new();
+        let data: serde_json::Value = match serde_json::from_slice(&output.stdout) {
+            Ok(v) => v,
+            Err(e) => {
+                warn!("shazam subprocess returned invalid JSON: {}", e);
+                return Ok(Vec::new());
+            }
+        };
 
-        if let Some(track) = data.get("track").and_then(|t| t.as_object()) {
-            let title = track
-                .get("title")
-                .and_then(|v| v.as_str())
-                .unwrap_or("Unknown")
-                .to_string();
-            let artist = track
-                .get("subtitle")
-                .and_then(|v| v.as_str())
-                .unwrap_or("Unknown")
-                .to_string();
-            let artwork_url = track
-                .get("images")
-                .and_then(|i| i.get("coverarthq"))
-                .and_then(|v| v.as_str())
-                .map(|s| s.to_string());
-
-            let preview_url = track
-                .get("hub")
-                .and_then(|h| h.get("actions"))
-                .and_then(|a| a.as_array())
-                .and_then(|arr| {
-                    arr.iter()
-                        .find(|x| x.get("type").and_then(|t| t.as_str()) == Some("uri"))
-                })
-                .and_then(|x| x.get("uri"))
-                .and_then(|v| v.as_str())
-                .map(|s| s.to_string());
-
-            let score = data
-                .get("matches")
-                .and_then(|m| m.as_array())
-                .and_then(|arr| arr.first())
-                .and_then(|first| first.get("score"))
-                .and_then(|v| v.as_f64())
-                .unwrap_or(0.8) as f32;
-
-            matches.push(SongMatch {
-                rank: None,
-                title,
-                artist,
-                album: None,
-                confidence: score.min(1.0),
-                provider: "shazam".to_string(),
-                artwork_url,
-                preview_url,
-                isrc: None,
-                duration: None,
-            });
+        if data.get("error").is_some() {
+            warn!("shazam subprocess error: {:?}", data["error"]);
+            return Ok(Vec::new());
         }
 
-        Ok(matches)
+        let title = match data["title"].as_str() {
+            Some(t) => t.to_string(),
+            None => return Ok(Vec::new()),
+        };
+
+        let artist = data["artist"].as_str().unwrap_or("Unknown").to_string();
+        let album = data["album"].as_str().map(|s| s.to_string());
+        let artwork_url = data["artwork_url"].as_str().map(|s| s.to_string());
+        let preview_url = data["preview_url"].as_str().map(|s| s.to_string());
+        let isrc = data["isrc"].as_str().map(|s| s.to_string());
+        let confidence = data["score"].as_f64().unwrap_or(0.8) as f32;
+
+        Ok(vec![SongMatch {
+            rank: None,
+            title,
+            artist,
+            album,
+            confidence,
+            provider: "shazam".to_string(),
+            artwork_url,
+            preview_url,
+            isrc,
+            duration: None,
+        }])
     }
 }

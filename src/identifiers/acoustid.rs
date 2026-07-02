@@ -80,18 +80,19 @@ impl Identifier for AcoustIdIdentifier {
     }
 
     fn enabled(&self) -> bool {
-        !self.config.api_key.is_empty()
+        self.config.enabled()
     }
 
     async fn identify(&self, wav_path: &Path) -> anyhow::Result<Vec<SongMatch>> {
         info!("identifying with AcoustID");
 
         let proc = AudioProcessor::new("ffmpeg", &self.config.fpcalc_path, std::env::temp_dir());
-        let fingerprint = proc.fingerprint(wav_path, "acoustid").await?;
+        let (fingerprint, duration) = proc.fingerprint(wav_path, "acoustid").await?;
 
         let params = [
             ("client", self.config.api_key.as_str()),
             ("fingerprint", fingerprint.as_str()),
+            ("duration", &duration.to_string()),
             (
                 "meta",
                 "recordings sources releasegroups releases tracks compress",
@@ -114,7 +115,8 @@ impl Identifier for AcoustIdIdentifier {
         };
 
         if !resp.status().is_success() {
-            warn!("AcoustID returned status {}", resp.status());
+            let body = resp.text().await.unwrap_or_default();
+            warn!("AcoustID returned status 400: {body}");
             return Ok(Vec::new());
         }
 

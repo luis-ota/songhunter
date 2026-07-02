@@ -72,7 +72,7 @@ impl AudioProcessor {
         &self,
         wav_path: impl AsRef<Path>,
         task_id: &str,
-    ) -> Result<String, AppError> {
+    ) -> Result<(String, i32), AppError> {
         info!(task_id, "computing chromaprint");
         let mut cmd = Command::new(&self.fpcalc_path);
         cmd.args([
@@ -87,23 +87,32 @@ impl AudioProcessor {
             .await
             .map_err(|e| AppError::Identification(format!("fpcalc failed to execute: {e}")))?;
 
-        if !result.status.success() {
-            let stderr = String::from_utf8_lossy(&result.stderr);
-            return Err(AppError::Identification(format!(
-                "fpcalc exited with status {}: {stderr}",
-                result.status
-            )));
-        }
+        let parsed: Result<serde_json::Value, _> = serde_json::from_slice(&result.stdout);
 
-        let parsed: serde_json::Value = serde_json::from_slice(&result.stdout)
-            .map_err(|e| AppError::Identification(format!("failed to parse fpcalc output: {e}")))?;
+        let parsed = match parsed {
+            Ok(v) => v,
+            Err(e) => {
+                let stderr = String::from_utf8_lossy(&result.stderr);
+                return Err(AppError::Identification(format!(
+                    "fpcalc failed to produce valid JSON (exit: {}, stderr: {stderr}): {e}",
+                    result.status
+                )));
+            }
+        };
 
-        parsed["fingerprint"]
+        let fp = parsed["fingerprint"]
             .as_str()
             .map(|s| s.to_string())
             .ok_or_else(|| {
                 AppError::Identification("fpcalc did not return a fingerprint".to_string())
-            })
+            })?;
+
+        let duration = parsed["duration"]
+            .as_f64()
+            .map(|d| d as i32)
+            .unwrap_or(90);
+
+        Ok((fp, duration))
     }
 
     pub async fn cleanup(&self, task_id: &str) -> anyhow::Result<()> {

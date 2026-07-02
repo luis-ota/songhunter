@@ -50,6 +50,28 @@ leve, rápido e com alto throughput.
 
 ---
 
+## Roadmap
+
+### 🟢 Feito
+- [x] Pipeline completo: download (yt-dlp) → normalização (FFmpeg) → hash (SHA256) → cache → identificação paralela
+- [x] Backend Shazam funcional via `shazamio` (Python)
+- [x] Backend AcoustID funcional com Chromaprint + MusicBrainz
+- [x] Frontend com barra de progresso e exibição destacada da música principal
+- [x] Cache SQLite por hash do áudio (evita reprocessar mesmo link/áudio)
+- [x] Docker Compose com multi-stage build (cargo-chef)
+- [x] Endpoint de health check
+
+### 🔜 Próximos passos
+- [ ] **Rate limiting HTTP** — proteger `/api/identify` contra abuso (ex: `tower-governor` ou `tower::limit`)
+- [x] **Fila com semáforo de concorrência** — limitar tasks simultâneas (configurável via `SONGFINDER_MAX_CONCURRENT_TASKS`, default 4)
+- [ ] **CORS restrito** — permitir apenas `songhunter.wired.rs` e localhost
+- [ ] **Cloudflare Turnstile** — captcha gratuito para requisições sequenciais
+- [ ] **Backend ACRCloud** — integrar terceiro provedor de identificação
+- [ ] **Seletor inteligente de anúncios** — CPM, fill rate, latência entre provedores
+- [ ] **Deploy** — colocar no ar em `songhunter.wired.rs`
+
+---
+
 ## Rodar localmente
 
 ### Com Docker Compose (recomendado)

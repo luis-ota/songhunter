@@ -9,6 +9,7 @@ use anyhow::Result;
 use chrono::Utc;
 use futures::future::join_all;
 use std::sync::Arc;
+use tokio::sync::Semaphore;
 use tracing::{error, info, warn};
 
 pub async fn run_worker(
@@ -17,7 +18,11 @@ pub async fn run_worker(
     registry: Arc<IdentifierRegistry>,
     mut rx: tokio::sync::mpsc::Receiver<TaskCommand>,
 ) {
-    let downloader = Arc::new(Downloader::new(&config.ytdlp_path, &config.temp_dir));
+    let downloader = Arc::new(Downloader::new(
+        &config.ytdlp_path,
+        &config.temp_dir,
+        config.ytdlp_extra_args.clone(),
+    ));
     let audio = Arc::new(AudioProcessor::new(
         &config.ffmpeg_path,
         config
@@ -28,14 +33,19 @@ pub async fn run_worker(
         &config.temp_dir,
     ));
 
+    let semaphore = Arc::new(Semaphore::new(config.max_concurrent_tasks));
+
     while let Some(cmd) = rx.recv().await {
         let config = config.clone();
         let cache = Arc::clone(&cache);
         let registry = Arc::clone(&registry);
         let downloader = Arc::clone(&downloader);
         let audio = Arc::clone(&audio);
+        let sem = Arc::clone(&semaphore);
 
         tokio::spawn(async move {
+            let _permit = sem.acquire_owned().await;
+
             if let Err(e) =
                 process_task(&config, &cache, &registry, &downloader, &audio, &cmd).await
             {

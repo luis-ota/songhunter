@@ -1,39 +1,51 @@
-# Estágio 1: Builder
-FROM rust:1.92-slim-bookworm AS builder
+# syntax=docker/dockerfile:1
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    pkg-config \
-    libssl-dev \
-    && rm -rf /var/lib/apt/lists/*
-
+# Estágio 1: Planner (cargo-chef)
+FROM rust:1.92-slim-bookworm AS chef
 WORKDIR /app
+RUN apt-get update && apt-get install -y --no-install-recommends pkg-config libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
+RUN cargo install cargo-chef --locked
 
-# Cache de dependências
-COPY Cargo.toml Cargo.lock ./
-RUN mkdir src && echo 'fn main() {}' > src/main.rs
-RUN cargo build --release && rm -rf src
-
-# Build real
+# Estágio 2: Gera o recipe.json
+FROM chef AS planner
 COPY . .
-RUN touch src/main.rs
-RUN cargo build --release
+RUN cargo chef prepare --recipe-path recipe.json
 
-# Estágio 2: Runtime
-FROM debian:bookworm-slim AS runtime
+# Estágio 3: Builder com cache de dependências
+FROM chef AS builder
+COPY --from=planner /app/recipe.json recipe.json
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    yt-dlp \
+# Build de dependências (camada cacheada)
+RUN --mount=type=cache,target=/usr/local/cargo/registry \
+    --mount=type=cache,target=/app/target \
+    cargo chef cook --release --recipe-path recipe.json
+
+# Build real do projeto
+COPY . .
+RUN --mount=type=cache,target=/usr/local/cargo/registry \
+    --mount=type=cache,target=/app/target \
+    cargo build --release && cp /app/target/release/songhunter /app/songhunter
+
+# Estágio 4: Runtime enxuto
+FROM python:3.11-slim-bookworm AS runtime
+
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
-    chromaprint-tools \
-    ca-certificates \
+    libchromaprint-tools \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p /app/data /app/tmp /app/static
+RUN pip3 install --no-cache-dir yt-dlp shazamio
 
-COPY --from=builder /app/target/release/songhunter /app/songhunter
-COPY --from=builder /app/static /app/static
-COPY --from=builder /app/migrations /app/migrations
+RUN mkdir -p /app/data /app/tmp /app/static /app/scripts
+
+COPY --from=builder /app/songhunter /app/songhunter
+COPY static /app/static
+COPY migrations /app/migrations
+COPY scripts /app/scripts
 
 WORKDIR /app
 
