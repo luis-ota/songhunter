@@ -68,7 +68,8 @@ leve, rápido e com alto throughput.
 - [ ] **Cloudflare Turnstile** — captcha gratuito para requisições sequenciais
 - [ ] **Backend ACRCloud** — integrar terceiro provedor de identificação
 - [ ] **Seletor inteligente de anúncios** — CPM, fill rate, latência entre provedores
-- [ ] **SEO** — otimizar meta tags, Open Graph, JSON-LD, sitemap, robots.txt para indexação em buscadores
+- [ ] **SEO + Mobile-first** — meta tags, Open Graph, JSON-LD, sitemap, robots.txt; layout responsivo priorizando mobile
+- [ ] **Android app** — wrapper WebView ou app nativo (React Native / Kotlin)
 - [ ] **Deploy** — colocar no ar em `songhunter.wired.rs`
 
 ---
