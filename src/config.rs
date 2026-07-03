@@ -64,6 +64,50 @@ pub struct AcrCloudConfig {
 pub struct ShazamConfig {}
 
 #[derive(Debug, Clone, Deserialize)]
+pub struct HouseAdSlot {
+    pub slot: String,
+    pub image_url: String,
+    pub dest_url: String,
+    pub alt: Option<String>,
+    pub cpm: Option<f64>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct AdsterraConfig {
+    pub slot: String,
+    pub script_src: Option<String>,
+    pub redirect_url: Option<String>,
+    pub cpm: Option<f64>,
+}
+
+#[derive(Debug, Clone, Default, Deserialize)]
+pub struct AdsConfig {
+    #[serde(default)]
+    pub house: Vec<HouseAdSlot>,
+    #[serde(default)]
+    pub adsterra: Vec<AdsterraConfig>,
+    #[serde(default)]
+    pub adsense_client: Option<String>,
+    #[serde(default)]
+    pub carbon_uid: Option<String>,
+    #[serde(default = "default_ad_refresh_secs")]
+    pub refresh_secs: u64,
+}
+
+fn default_ad_refresh_secs() -> u64 { 60 }
+
+impl AdsConfig {
+    pub fn enabled_providers(&self) -> Vec<&'static str> {
+        let mut v = Vec::new();
+        if !self.house.is_empty() { v.push("house"); }
+        if !self.adsterra.is_empty() { v.push("adsterra"); }
+        if self.adsense_client.is_some() { v.push("adsense"); }
+        if self.carbon_uid.is_some() { v.push("carbon"); }
+        v
+    }
+}
+
+#[derive(Debug, Clone, Deserialize)]
 pub struct Config {
     #[serde(default = "default_host")]
     pub host: String,
@@ -91,6 +135,8 @@ pub struct Config {
     pub ytdlp_extra_args: Vec<String>,
     #[serde(default)]
     pub ytdlp_cookies_file: Option<String>,
+    #[serde(default)]
+    pub ads: AdsConfig,
 }
 
 impl Config {
@@ -99,6 +145,7 @@ impl Config {
 
         let cfg = config::Config::builder()
             .add_source(config::File::with_name("config").required(false))
+            .add_source(config::File::with_name("config/ads").required(false))
             .add_source(config::Environment::with_prefix("SONGFINDER").separator("__"))
             .build()?;
 

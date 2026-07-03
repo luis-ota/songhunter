@@ -1,3 +1,4 @@
+mod ads;
 mod audio;
 mod cache;
 mod config;
@@ -58,6 +59,10 @@ async fn main() -> anyhow::Result<()> {
         cookies_file = ?config.ytdlp_cookies_file,
         "cookies config"
     );
+    tracing::info!(
+        ad_providers = ?config.ads.enabled_providers(),
+        "ads config"
+    );
 
     let (tx, rx) = mpsc::channel::<worker::TaskCommand>(config.max_concurrent_tasks * 2);
 
@@ -74,6 +79,7 @@ async fn main() -> anyhow::Result<()> {
         .route("/api/identify", post(http::identify))
         .route("/api/result/{task_id}", get(http::result))
         .route("/api/health", get(http::health))
+        .route("/api/ads", get(http::ads))
         .route("/api/cookies", post(http::save_cookies))
         .route("/api/cookies/status", get(http::cookies_status))
         .route("/auth-insta", get(http::auth_insta_page))

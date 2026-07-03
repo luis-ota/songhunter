@@ -44,6 +44,7 @@ RUN mkdir -p /app/data /app/tmp /app/static /app/scripts
 
 COPY --from=builder /app/songhunter /app/songhunter
 COPY static /app/static
+COPY config /app/config
 COPY migrations /app/migrations
 COPY scripts /app/scripts
 

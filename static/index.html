@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
   <title>SongHunter — descubra a música em qualquer link</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="alternate icon" href="/favicon.ico">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5312939990579313" crossorigin="anonymous"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; }
     :root {
@@ -309,7 +312,8 @@
     </div>
     <div class="status" id="status"></div>
 
-    <div class="ad-slot" data-ad="top-banner">Anúncio</div>
+    <div class="ad-slot" id="ad-top-banner" data-ad="top-banner"></div>
+    <div class="ad-slot" id="ad-terra" data-ad="terra"></div>
 
     <div id="results" class="hidden">
       <div class="results-card" id="resultsCard">
@@ -321,7 +325,7 @@
       </div>
     </div>
 
-    <footer>SongHunter — ferramenta gratuita mantida por anúncios.</footer>
+    <footer>SongHunter</footer>
   </div>
 
   <script>
@@ -479,6 +483,19 @@
     urlInput.addEventListener('keydown', function(e) {
       if (e.key === 'Enter') searchBtn.click();
     });
+
+    (async function loadAds() {
+      try {
+        var res = await fetch('/api/ads');
+        if (!res.ok) return;
+        var data = await res.json();
+        for (var i = 0; i < data.slots.length; i++) {
+          var s = data.slots[i];
+          var el = document.querySelector('[data-ad="' + s.slot + '"]');
+          if (el) { el.innerHTML = s.html; el.classList.add('loaded'); }
+        }
+      } catch (e) { /* silêncio */ }
+    })();
   </script>
 </body>
 </html>

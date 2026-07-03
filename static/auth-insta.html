@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SongHunter - Cookies Instagram</title>
+  <style>
+    :root {
+      --bg: #0f0f0f;
+      --surface: #1a1a1a;
+      --text: #f0f0f0;
+      --muted: #888;
+      --accent: #ff3e81;
+      --accent-2: #00d4aa;
+      --border: #2a2a2a;
+      --warn: #ffa726;
+      --err: #ff6b6b;
+      --ok: #66bb6a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+    }
+    .container { width: 100%; max-width: 600px; }
+    h1 { font-size: 2rem; margin: 0 0 0.5rem; background: linear-gradient(90deg, var(--accent), var(--accent-2)); -webkit-background-clip: text; color: transparent; }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+    }
+    p { color: var(--muted); line-height: 1.5; }
+    ol { color: var(--muted); line-height: 1.8; padding-left: 1.5rem; }
+    textarea {
+      width: 100%;
+      height: 200px;
+      padding: 1rem;
+      font-size: 0.85rem;
+      font-family: monospace;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      outline: none;
+      resize: vertical;
+    }
+    textarea:focus { border-color: var(--accent); }
+    button {
+      width: 100%;
+      margin-top: 1rem;
+      padding: 1rem;
+      font-size: 1.1rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      color: #fff;
+      cursor: pointer;
+    }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    #status { margin-top: 1rem; text-align: center; min-height: 1.5rem; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.5rem 1rem; border-radius: 999px; font-size: 0.9rem;
+    }
+    .badge.ok { background: #1b5e20; color: var(--ok); }
+    .badge.warn { background: #4e342e; color: var(--warn); }
+    .badge.err { background: #4e1a1a; color: var(--err); }
+    .badge.none { background: #2a2a2a; color: var(--muted); }
+    a { color: var(--accent-2); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🍪 Cookies Instagram</h1>
+    <p>O Instagram exige login para baixar áudio. Cole aqui o conteúdo do <code>cookies.txt</code> exportado.</p>
+
+    <div class="card">
+      <h3>Status atual</h3>
+      <div id="statusBadge" class="badge none">Verificando...</div>
+      <div id="expiryInfo" style="margin-top:0.5rem;color:var(--muted);font-size:0.9rem;"></div>
+    </div>
+
+    <div class="card">
+      <h3>Como exportar os cookies</h3>
+      <ol>
+        <li>Instale a extensão <a href="https://chrome.google.com/webstore/detail/get-cookiestxt/bgaddhkoddajcdgocldbbfleckgcbcid" target="_blank">Get cookies.txt</a> (Chrome) ou <a href="https://addons.mozilla.org/pt-BR/firefox/addon/cookies-txt/" target="_blank">cookies.txt</a> (Firefox)</li>
+        <li>Acesse <strong>instagram.com</strong> e faça login</li>
+        <li>Clique na extensão e exporte os cookies</li>
+        <li>Copie o conteúdo do arquivo e cole abaixo</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <textarea id="cookieInput" placeholder="Cole o conteúdo do cookies.txt aqui..."></textarea>
+      <button id="saveBtn">Salvar cookies</button>
+      <div id="status"></div>
+    </div>
+
+    <p style="text-align:center;margin-top:1rem;"><a href="/">&larr; Voltar ao SongHunter</a></p>
+  </div>
+
+  <script>
+    const cookieInput = document.getElementById('cookieInput');
+    const saveBtn = document.getElementById('saveBtn');
+    const statusEl = document.getElementById('status');
+    const statusBadge = document.getElementById('statusBadge');
+    const expiryInfo = document.getElementById('expiryInfo');
+
+    async function checkStatus() {
+      try {
+        const res = await fetch('/api/cookies/status');
+        if (!res.ok) throw new Error('fail');
+        const data = await res.json();
+        if (!data.exists) {
+          statusBadge.className = 'badge none';
+          statusBadge.textContent = 'Nenhum cookie configurado';
+          expiryInfo.textContent = 'Instagram não funcionará sem cookies.';
+          return;
+        }
+        if (data.expired) {
+          statusBadge.className = 'badge err';
+          statusBadge.textContent = '⚠ Expirado';
+          expiryInfo.textContent = `Expirou em ${data.expired_at}. Exporte e cole novamente.`;
+          return;
+        }
+        const days = data.days_until_expiry;
+        if (days <= 7) {
+          statusBadge.className = 'badge warn';
+          statusBadge.textContent = `⚠ Expira em ${days} dia(s)`;
+        } else {
+          statusBadge.className = 'badge ok';
+          statusBadge.textContent = `✅ Válido (${days} dias restantes)`;
+        }
+        expiryInfo.textContent = `Expira em: ${data.expires_at}`;
+      } catch {
+        statusBadge.className = 'badge none';
+        statusBadge.textContent = 'Erro ao verificar';
+      }
+    }
+
+    saveBtn.addEventListener('click', async () => {
+      const content = cookieInput.value.trim();
+      if (!content) {
+        statusEl.textContent = 'Cole o conteúdo do cookies.txt primeiro.';
+        statusEl.style.color = 'var(--err)';
+        return;
+      }
+      saveBtn.disabled = true;
+      statusEl.textContent = 'Salvando...';
+      statusEl.style.color = 'var(--muted)';
+      try {
+        const res = await fetch('/api/cookies', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content })
+        });
+        if (!res.ok) throw new Error(await res.text());
+        statusEl.textContent = '✅ Cookies salvos com sucesso!';
+        statusEl.style.color = 'var(--ok)';
+        cookieInput.value = '';
+        await checkStatus();
+      } catch (e) {
+        statusEl.textContent = 'Erro: ' + e.message;
+        statusEl.style.color = 'var(--err)';
+      }
+      saveBtn.disabled = false;
+    });
+
+    checkStatus();
+  </script>
+</body>
+</html>

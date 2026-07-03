@@ -92,9 +92,7 @@ pub async fn cookies_status(
     let content = match tokio::fs::read_to_string(&state.cookies_file).await {
         Ok(c) => c,
         Err(_) => {
-            return Json(serde_json::json!({
-                "exists": false,
-            }));
+            return Json(serde_json::json!({"exists": false}));
         }
     };
 
@@ -108,18 +106,18 @@ pub async fn cookies_status(
             continue;
         }
         let cols: Vec<&str> = line.split('\t').collect();
-        if cols.len() >= 5 {
-            if let Ok(ts) = cols[4].parse::<i64>() {
-                if ts == 0 || ts == 2147483647 {
-                    continue;
-                }
-                let dt = chrono::DateTime::from_timestamp(ts, 0).map(|d| d.naive_utc());
-                if let Some(dt) = dt {
-                    match earliest {
-                        None => earliest = Some(dt),
-                        Some(e) if dt < e => earliest = Some(dt),
-                        _ => {}
-                    }
+        if cols.len() >= 5
+            && let Ok(ts) = cols[4].parse::<i64>()
+        {
+            if ts == 0 || ts == 2147483647 {
+                continue;
+            }
+            let dt = chrono::DateTime::from_timestamp(ts, 0).map(|d| d.naive_utc());
+            if let Some(dt) = dt {
+                match earliest {
+                    None => earliest = Some(dt),
+                    Some(e) if dt < e => earliest = Some(dt),
+                    _ => {}
                 }
             }
         }
@@ -148,4 +146,8 @@ pub async fn cookies_status(
             "note": "Cookies presentes mas sem data de expiração detectada",
         })),
     }
+}
+
+pub async fn ads(State(state): State<Arc<AppState>>) -> Json<crate::ads::AdResponse> {
+    Json(state.ad_engine.collect())
 }
