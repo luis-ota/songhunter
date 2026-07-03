@@ -47,6 +47,54 @@
     }
   }
   </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Como o SongHunter descobre a música a partir de um link?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Quando você cola um link, o SongHunter baixa o áudio do vídeo usando yt-dlp, extrai uma amostra limpa com FFmpeg, e analisa usando tecnologia de impressão digital de áudio do Shazam e AcoustID. O processo compara o padrão sonoro com bancos de dados de milhões de músicas para encontrar uma correspondência exata. Tudo leva de 10 a 30 segundos."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Quanto custa usar o SongHunter?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "SongHunter é completamente gratuito. Não há cobranças, assinaturas ou limite de identificações. O serviço é mantido por anúncios."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Quais plataformas de vídeo são suportadas?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "SongHunter suporta qualquer plataforma que o yt-dlp consegue baixar: TikTok, YouTube (incluindo Shorts), Instagram (Reels e posts), Twitter/X, Facebook, SoundCloud, Vimeo, e centenas de outras. Basta colar o link."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "O que fazer se a música não for identificada?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Tente com um vídeo diferente que contenha a mesma música em maior volume e com menos ruído de fundo. Músicas muito remixadas, áudio original de criadores, ou clipes muito curtos podem não ser reconhecidos."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Qual a diferença do SongHunter para o Shazam?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "O Shazam exige que você reproduza o áudio ao vivo perto do microfone. SongHunter funciona colando um link — não precisa ter o som tocando, não precisa de app instalado, e funciona com vídeos de redes sociais que o Shazam não processa."
+        }
+      }
+    ]
+  }
+  </script>
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5312939990579313" crossorigin="anonymous"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; }
@@ -319,11 +367,92 @@
     }
 
     footer {
-      margin-top: auto;
+      margin-top: 3rem;
       padding: 2rem 0;
       text-align: center;
       font-size: 0.75rem;
       color: var(--text-secondary);
+      border-top: 1px solid var(--border);
+    }
+
+    /* SEO content sections */
+    .seo-content {
+      margin-top: 3rem;
+      padding-top: 1rem;
+    }
+    .seo-content h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin: 2rem 0 1rem;
+      color: var(--text);
+    }
+    .seo-content h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin: 1.5rem 0 0.5rem;
+      color: var(--text);
+    }
+    .seo-content p {
+      font-size: 0.875rem;
+      line-height: 1.7;
+      color: var(--text-secondary);
+      margin: 0 0 0.75rem;
+    }
+    .seo-content ol {
+      padding: 0;
+      list-style: none;
+      counter-reset: step;
+    }
+    .seo-content ol li {
+      counter-increment: step;
+      padding: 1rem 0 1rem 2.5rem;
+      position: relative;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      border-bottom: 1px solid var(--border);
+    }
+    .seo-content ol li:last-child { border-bottom: none; }
+    .seo-content ol li::before {
+      content: counter(step);
+      position: absolute;
+      left: 0;
+      top: 1rem;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--accent-dim);
+      color: var(--accent);
+      font-size: 0.75rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .seo-content ol li strong {
+      display: block;
+      color: var(--text);
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+    .faq-item {
+      border-bottom: 1px solid var(--border);
+      padding: 0.75rem 0;
+    }
+    .faq-item:last-child { border-bottom: none; }
+    .faq-item h3 {
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin: 0 0 0.25rem;
+      color: var(--text);
+      cursor: pointer;
+    }
+    .faq-item p {
+      font-size: 0.8125rem;
+      color: var(--text-secondary);
+      margin: 0;
+      line-height: 1.6;
     }
 
     @media (max-width: 480px) {
@@ -367,6 +496,56 @@
     </div>
 
     <footer>SongHunter</footer>
+
+    <div class="seo-content">
+      <h2>Como identificar qualquer música de um link</h2>
+      <ol>
+        <li>
+          <strong>Cole o link do vídeo</strong>
+          Copie a URL de qualquer vídeo do TikTok, YouTube, Instagram Reels, Twitter/X, Facebook ou SoundCloud. Abra o vídeo, toque em compartilhar e copie o link — é tudo que você precisa.
+        </li>
+        <li>
+          <strong>O SongHunter analisa o áudio</strong>
+          Nossa ferramenta baixa o vídeo, extrai o áudio e o processa com tecnologia avançada de impressão digital. Comparamos o padrão sonoro com milhões de músicas nos bancos de dados do Shazam e AcoustID.
+        </li>
+        <li>
+          <strong>Descubra o nome da música</strong>
+          Em segundos, você vê o título, artista, capa do álbum e links diretos para ouvir no Spotify, YouTube, Apple Music e Deezer. Tudo de graça, sem precisar instalar nada.
+        </li>
+      </ol>
+
+      <h2>Por que o SongHunter é gratuito?</h2>
+      <p>Diferente de outros identificadores musicais que cobram por identificação ou exigem assinatura, o SongHunter é mantido por anúncios. Você pode identificar quantas músicas quiser sem pagar nada. Acreditamos que descobrir uma música não deveria custar dinheiro.</p>
+
+      <h2>Por que a identificação pode não funcionar?</h2>
+      <p>Nossa tecnologia é precisa para a grande maioria das músicas populares, mas alguns fatores podem impedir o reconhecimento:</p>
+      <p><strong>Áudio original ou não publicado</strong> — Se o criador usou música própria ou efeitos inéditos, não há registro nos bancos de dados para comparar.</p>
+      <p><strong>Remixes pesados</strong> — Músicas muito aceleradas, desaceleradas ou remixadas podem diferir demais da gravação original.</p>
+      <p><strong>Clipe muito curto ou ruidoso</strong> — Se a música está baixa ou o vídeo tem muito ruído de fundo, a amostra pode não ser limpa o suficiente.</p>
+      <p><strong>Músicas muito obscuras</strong> — Faixas extremamente nichadas ou regionais podem não estar nos bancos de dados do Shazam ou AcoustID.</p>
+
+      <h2>Perguntas Frequentes</h2>
+      <div class="faq-item">
+        <h3>Como o SongHunter descobre a música a partir de um link?</h3>
+        <p>Ao colar um link, baixamos o áudio do vídeo com yt-dlp, extraímos uma amostra limpa de 15 segundos com FFmpeg, e consultamos as APIs do Shazam e AcoustID. A impressão digital do áudio é comparada com milhões de músicas para encontrar a correspondência exata.</p>
+      </div>
+      <div class="faq-item">
+        <h3>Preciso pagar para usar?</h3>
+        <p>Não. SongHunter é completamente gratuito. O serviço é mantido por anúncios, sem cobranças ou limites de uso.</p>
+      </div>
+      <div class="faq-item">
+        <h3>Quais plataformas são suportadas?</h3>
+        <p>Todas as plataformas que o yt-dlp suporta: TikTok, YouTube (vídeos e Shorts), Instagram (Reels e posts), Twitter/X, Facebook, SoundCloud, Vimeo, e centenas de outras.</p>
+      </div>
+      <div class="faq-item">
+        <h3>Qual a diferença para o Shazam?</h3>
+        <p>O Shazam precisa do som tocando ao vivo no microfone. SongHunter funciona com links — você cola a URL de um vídeo e identificamos a música mesmo sem reproduzir o áudio no momento.</p>
+      </div>
+      <div class="faq-item">
+        <h3>Preciso criar uma conta?</h3>
+        <p>Não. SongHunter não exige cadastro, login ou instalação. Funciona direto no navegador, 100% online.</p>
+      </div>
+    </div>
   </div>
 
   <script>
