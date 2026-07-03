@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://songhunter.wired.rs/sitemap.xml
