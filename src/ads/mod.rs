@@ -72,10 +72,17 @@ impl AdEngine {
 
     fn adsterra_html(&self, ad: &AdsterraConfig) -> String {
         if let Some(src) = &ad.script_src {
-            format!(
-                r#"<script type="text/javascript" src="{src}"></script>"#,
-                src = src,
-            )
+            if let Some(cid) = &ad.container_id {
+                format!(
+                    r#"<div id="{cid}"></div><script async src="{src}"></script>"#,
+                    cid = cid, src = src,
+                )
+            } else {
+                format!(
+                    r#"<script type="text/javascript" src="{src}"></script>"#,
+                    src = src,
+                )
+            }
         } else if let Some(url) = &ad.redirect_url {
             format!(
                 r#"<a href="{url}" target="_blank" rel="sponsored noopener" class="ad-link">Patrocinado &rsaquo;</a>"#,

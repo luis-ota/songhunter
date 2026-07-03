@@ -77,6 +77,7 @@ pub struct AdsterraConfig {
     pub slot: String,
     pub script_src: Option<String>,
     pub redirect_url: Option<String>,
+    pub container_id: Option<String>,
     pub cpm: Option<f64>,
 }
 
