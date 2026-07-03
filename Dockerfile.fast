@@ -1,0 +1,27 @@
+FROM ubuntu:24.04
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 python3-pip python3-venv \
+    ffmpeg libchromaprint-tools curl ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN python3 -m venv /venv && \
+    /venv/bin/pip install --no-cache-dir yt-dlp shazamio
+
+RUN mkdir -p /app/data /app/tmp /app/static /app/scripts /app/config
+
+COPY songhunter.new /app/songhunter
+COPY static /app/static
+COPY config /app/config
+COPY scripts /app/scripts
+
+WORKDIR /app
+
+ENV PATH="/venv/bin:$PATH"
+ENV SONGFINDER_HOST=0.0.0.0
+ENV SONGFINDER_PORT=3000
+ENV SONGFINDER_TEMP_DIR=/app/tmp
+
+EXPOSE 3000
+
+CMD ["./songhunter"]
