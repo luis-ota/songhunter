@@ -4,6 +4,11 @@ adsense_client = "ca-pub-5312939990579313"
 
 # ─── Adsterra ─────────────────────────────────────────────
 [[ads.adsterra]]
+slot = "top-banner"
+redirect_url = "https://www.effectivecpmnetwork.com/tfm84s4e6a?key=a0917091db28caa0a680bad911c9473b"
+cpm = 1.50
+
+[[ads.adsterra]]
 slot = "terra"
 redirect_url = "https://www.effectivecpmnetwork.com/tfm84s4e6a?key=a0917091db28caa0a680bad911c9473b"
 cpm = 1.50

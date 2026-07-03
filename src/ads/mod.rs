@@ -78,7 +78,7 @@ impl AdEngine {
             )
         } else if let Some(url) = &ad.redirect_url {
             format!(
-                r#"<a href="{url}" target="_blank" rel="sponsored noopener" style="display:block;padding:12px;text-align:center;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text-secondary);font-size:0.85rem;text-decoration:none">Anúncio</a>"#,
+                r#"<a href="{url}" target="_blank" rel="sponsored noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px 20px;text-align:center;background:var(--surface-raised);border:1px solid var(--accent);border-radius:10px;color:var(--text);font-size:0.9rem;font-weight:600;text-decoration:none;transition:background .2s" onmouseover="this.style.background=\'var(--accent-dim)\'" onmouseout="this.style.background=\'var(--surface-raised)\'">Patrocinado &rsaquo;</a>"#,
                 url = url,
             )
         } else {
