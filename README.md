@@ -127,6 +127,16 @@ Consulta o progresso/resultado.
 
 Status dos provedores configurados.
 
+---
+
+## Segurança
+
+A API é protegida contra uso por terceiros:
+
+- **CORS restrito** — apenas `https://songhunter.wired.rs` é permitido como origem
+- **Validação de origem** — o endpoint `POST /api/identify` rejeita requisições sem os headers `Origin` ou `Referer` vindos do domínio autorizado
+- **Rate limiting** — limite de 60 requisições por hora por IP na identificação
+
 ## Licença
 
 MIT
