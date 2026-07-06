@@ -501,9 +501,6 @@
     </div>
     <div class="status" id="status"></div>
 
-    <div class="ad-slot" id="ad-top-banner" data-ad="top-banner"></div>
-    <div class="ad-slot" id="ad-terra" data-ad="terra"></div>
-
     <div id="results" class="hidden">
       <div class="results-card" id="resultsCard">
         <div id="heroArea"></div>
@@ -513,6 +510,9 @@
         </div>
       </div>
     </div>
+
+    <div class="ad-slot" id="ad-top-banner" data-ad="top-banner"></div>
+    <div class="ad-slot" id="ad-terra" data-ad="terra"></div>
 
     <footer>SongHunter</footer>
 
@@ -660,7 +660,7 @@
         '<span class="hero-meta">' + escapeHtml(top.provider) + ' &middot; ' + Math.round((top.confidence || 0) * 100) + '%</span>' +
         '<div class="hero-links">' +
         plat1.map(function(p) {
-          return '<a href="' + searchUrl(p, top.title, top.artist) + '" target="_blank" rel="noopener" title="' + p + '">' + icons[p] + '</a>';
+          return '<a href="#" data-stream="' + searchUrl(p, top.title, top.artist) + '" title="' + p + '">' + icons[p] + '</a>';
         }).join('') +
         '</div></div>';
 
@@ -681,7 +681,7 @@
             '<span class="pct">' + Math.round((s.confidence || 0) * 100) + '%</span>' +
             '<div style="display:flex;gap:2px">' +
             plat2.map(function(p) {
-              return '<a href="' + searchUrl(p, s.title, s.artist) + '" target="_blank" rel="noopener" title="' + p + '" class="stream-icon">' + icons[p] + '</a>';
+              return '<a href="#" data-stream="' + searchUrl(p, s.title, s.artist) + '" title="' + p + '" class="stream-icon">' + icons[p] + '</a>';
             }).join('') +
             '</div></div>';
           lowerList.appendChild(el);
@@ -723,11 +723,27 @@
       if (e.key === 'Enter') searchBtn.click();
     });
 
+    var smartlinkUrl = null;
+
+    resultsEl.addEventListener('click', function(e) {
+      var link = e.target.closest('[data-stream]');
+      if (!link) return;
+      e.preventDefault();
+      var dest = link.getAttribute('data-stream');
+      if (!dest) return;
+      if (smartlinkUrl && !localStorage.getItem('sl_clicked')) {
+        localStorage.setItem('sl_clicked', '1');
+        window.open(smartlinkUrl, '_blank');
+      }
+      window.open(dest, '_blank');
+    });
+
     (async function loadAds() {
       try {
         var res = await fetch('/api/ads');
         if (!res.ok) return;
         var data = await res.json();
+        smartlinkUrl = data.smartlink_url || null;
         for (var i = 0; i < data.slots.length; i++) {
           var s = data.slots[i];
           var el = document.querySelector('[data-ad="' + s.slot + '"]');

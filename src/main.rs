@@ -7,6 +7,7 @@ mod error;
 mod http;
 mod identifiers;
 mod models;
+mod security;
 mod state;
 mod worker;
 
@@ -17,6 +18,7 @@ use crate::state::AppState;
 use crate::worker::run_worker;
 use axum::{
     Router,
+    middleware,
     routing::{get, post},
 };
 use std::sync::Arc;
@@ -74,6 +76,16 @@ async fn main() -> anyhow::Result<()> {
     });
 
     let state = Arc::new(AppState::new(config.clone(), cache, registry, tx));
+    let rate_limiter = Arc::new(security::RateLimiter::new(60, 3600));
+
+    let cors = CorsLayer::new()
+        .allow_origin(
+            "https://songhunter.wired.rs"
+                .parse::<axum::http::HeaderValue>()
+                .unwrap(),
+        )
+        .allow_methods([axum::http::Method::GET, axum::http::Method::POST])
+        .allow_headers([axum::http::header::CONTENT_TYPE]);
 
     let app = Router::new()
         .route("/api/identify", post(http::identify))
@@ -83,8 +95,12 @@ async fn main() -> anyhow::Result<()> {
         .route("/api/cookies", post(http::save_cookies))
         .route("/api/cookies/status", get(http::cookies_status))
         .route("/auth-insta", get(http::auth_insta_page))
+        .layer(middleware::from_fn_with_state(
+            rate_limiter.clone(),
+            security::api_guard,
+        ))
         .fallback_service(tower_http::services::ServeDir::new("static"))
-        .layer(CorsLayer::permissive())
+        .layer(cors)
         .layer(TraceLayer::new_for_http())
         .with_state(state);
 

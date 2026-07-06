@@ -5,6 +5,8 @@ use serde::Serialize;
 pub struct AdResponse {
     pub slots: Vec<AdSlotResult>,
     pub refresh_secs: u64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub smartlink_url: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -26,9 +28,13 @@ impl AdEngine {
 
     pub fn collect(&self) -> AdResponse {
         let slots = self.collect_slots();
+        let smartlink_url = self.config.adsterra.iter()
+            .find(|a| a.slot == "terra")
+            .and_then(|a| a.redirect_url.clone());
         AdResponse {
             refresh_secs: self.config.refresh_secs,
             slots,
+            smartlink_url,
         }
     }
 
