@@ -4,10 +4,6 @@ Identificador musical via links. Cole qualquer URL (TikTok, YouTube, Instagram,
 Twitter/X, Reddit, Twitch, SoundCloud etc.) e descubra quais músicas aparecem no
 vídeo.
 
-> Projeto pessoal, gratuito e mantido por anúncios.
-
----
-
 ## Como funciona
 
 ```
@@ -47,32 +43,6 @@ leve, rápido e com alto throughput.
 ## Repositório
 
 <https://github.com/luis-ota/songhunter>
-
----
-
-## Roadmap
-
-### 🟢 Feito
-- [x] Pipeline completo: download (yt-dlp) → normalização (FFmpeg) → hash (SHA256) → cache → identificação paralela
-- [x] Backend Shazam funcional via `shazamio` (Python)
-- [x] Backend AcoustID funcional com Chromaprint + MusicBrainz
-- [x] Frontend com barra de progresso e exibição destacada da música principal
-- [x] Cache SQLite por hash do áudio (evita reprocessar mesmo link/áudio)
-- [x] Docker Compose com multi-stage build (cargo-chef)
-- [x] Endpoint de health check
-
-### 🔜 Próximos passos
-- [ ] **Rate limiting HTTP** — proteger `/api/identify` contra abuso (ex: `tower-governor` ou `tower::limit`)
-- [x] **Fila com semáforo de concorrência** — limitar tasks simultâneas (configurável via `SONGFINDER_MAX_CONCURRENT_TASKS`, default 4)
-- [ ] **CORS restrito** — permitir apenas `songhunter.wired.rs` e localhost
-- [ ] **Cloudflare Turnstile** — captcha gratuito para requisições sequenciais
-- [ ] **Backend ACRCloud** — integrar terceiro provedor de identificação
-- [ ] **Seletor inteligente de anúncios** — CPM, fill rate, latência entre provedores
-- [ ] **SEO + Mobile-first** — meta tags, Open Graph, JSON-LD, sitemap, robots.txt; layout responsivo priorizando mobile
-- [ ] **Android app** — wrapper WebView ou app nativo (React Native / Kotlin)
-- [ ] **Deploy** — colocar no ar em `songhunter.wired.rs`
-
----
 
 ## Rodar localmente
 
@@ -156,40 +126,6 @@ Consulta o progresso/resultado.
 ### `GET /api/health`
 
 Status dos provedores configurados.
-
----
-
-## Modelo de negócio: gratuito com anúncios
-
-A ferramenta é **100% gratuita** para o usuário final e é mantida por
-anúncios exibidos nos espaços reservados no frontend.
-
-### Provedores de anúncios previstos
-
-A ideia futura é implementar um **seletor inteligente de provedores** que
-escolhe o melhor anúncio para cada exibição com base em:
-
-- CPM (custo por mil impressões)
-- Fill rate (taxa de preenchimento)
-- Tempo de carregamento
-- Relevância para o usuário
-- Pagamento mínimo/reputação
-
-Provedores candidatos:
-
-- Google AdSense
-- Carbon Ads
-- BuySellAds
-- Adsterra
-- PropellerAds
-- Ezoic
-- Outros networks locais
-
-O seletor consulta múltiplos provedores e exibe o anúncio que maximiza a
-receita esperada por impressão, garantindo que a experiência do usuário
-continue rápida.
-
----
 
 ## Licença
 
