@@ -731,7 +731,17 @@
         for (var i = 0; i < data.slots.length; i++) {
           var s = data.slots[i];
           var el = document.querySelector('[data-ad="' + s.slot + '"]');
-          if (el) { el.innerHTML = s.html; el.classList.add('loaded'); }
+          if (!el) continue;
+          el.innerHTML = s.html;
+          el.classList.add('loaded');
+          el.querySelectorAll('script').forEach(function(old) {
+            var nue = document.createElement('script');
+            for (var j = 0; j < old.attributes.length; j++) {
+              nue.setAttribute(old.attributes[j].name, old.attributes[j].value);
+            }
+            nue.textContent = old.textContent;
+            old.parentNode.replaceChild(nue, old);
+          });
         }
       } catch (e) { /* silêncio */ }
     })();
