@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # Estágio 1: Planner (cargo-chef)
-FROM rust:1.92-slim-bookworm AS chef
+FROM rust:1.98-slim-bookworm AS chef
 WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends pkg-config libssl-dev \
     && rm -rf /var/lib/apt/lists/*
