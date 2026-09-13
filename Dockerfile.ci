@@ -1,0 +1,33 @@
+# syntax=docker/dockerfile:1
+
+# Imagem de release para CI: o binário Rust já chega compilado do runner
+# (ver .github/workflows/deploy.yml), então só empacotamos runtime + binário.
+FROM python:3.11-slim-bookworm AS runtime
+
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update && apt-get install -y --no-install-recommends \
+    ffmpeg \
+    libchromaprint-tools \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN pip3 install --no-cache-dir -U "yt-dlp[default]" curl_cffi shazamio
+
+RUN mkdir -p /app/data /app/tmp /app/static /app/scripts /app/config
+
+COPY songhunter /app/songhunter
+COPY static /app/static
+COPY config /app/config
+COPY migrations /app/migrations
+COPY scripts /app/scripts
+
+WORKDIR /app
+
+ENV SONGFINDER_HOST=0.0.0.0
+ENV SONGFINDER_PORT=3000
+ENV SONGFINDER_TEMP_DIR=/app/tmp
+
+EXPOSE 3000
+
+CMD ["./songhunter"]
