@@ -1,18 +1,25 @@
 # syntax=docker/dockerfile:1
 
 # Imagem de release para CI: o binário Rust já chega compilado do runner
-# (ver .github/workflows/deploy.yml), então só empacotamos runtime + binário.
-FROM python:3.11-slim-bookworm AS runtime
+# (ver .github/workflows/deploy.yml). O runtime é Ubuntu 24.04 para casar com
+# a glibc do runner ubuntu-latest; o yt-dlp vem do pip (extractors atualizados
+# + suporte a impersonate via curl_cffi).
+FROM ubuntu:24.04 AS runtime
 
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,target=/var/lib/apt,sharing=locked \
-    apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
     ffmpeg \
     libchromaprint-tools \
-    curl \
+    python3 \
+    python3-venv \
+    && (apt-get install -y --no-install-recommends libssl3t64 || apt-get install -y --no-install-recommends libssl3) \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install --no-cache-dir -U "yt-dlp[default]" curl_cffi shazamio
+RUN python3 -m venv /opt/ytdlp \
+    && /opt/ytdlp/bin/pip install --no-cache-dir -U "yt-dlp[default]" curl_cffi shazamio
+
+ENV PATH="/opt/ytdlp/bin:$PATH"
 
 RUN mkdir -p /app/data /app/tmp /app/static /app/scripts /app/config
 
