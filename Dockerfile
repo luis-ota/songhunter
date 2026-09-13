@@ -38,7 +38,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install --no-cache-dir yt-dlp shazamio
+RUN pip3 install --no-cache-dir -U "yt-dlp[default]" curl_cffi shazamio
 
 RUN mkdir -p /app/data /app/tmp /app/static /app/scripts
 

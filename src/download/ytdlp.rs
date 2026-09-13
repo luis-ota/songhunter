@@ -2,7 +2,7 @@ use crate::error::AppError;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 use tokio::process::Command;
-use tracing::{debug, info};
+use tracing::{debug, info, warn};
 
 pub struct Downloader {
     ytdlp_path: String,
@@ -60,6 +60,79 @@ impl Downloader {
         } else {
             url.to_string()
         }
+    }
+
+    /// Drop tracking query/fragment from Instagram links and normalize /reels/.
+    fn normalize_instagram(url: &str) -> String {
+        if !url.contains("instagram.com") {
+            return url.to_string();
+        }
+        let sem_query = url.split(['?', '#']).next().unwrap_or(url);
+        let normalizada = sem_query.replace("/reels/", "/reel/");
+        if normalizada != url {
+            info!(original = url, normalizada, "normalized Instagram URL");
+        }
+        normalizada
+    }
+
+    /// Fallback TikTok via TikWM quando o challenge do yt-dlp falha.
+    async fn tikwm_fallback(&self, url: &str, output_dir: &Path) -> Result<PathBuf, AppError> {
+        info!(url, "trying TikWM fallback");
+        let api = reqwest::Url::parse_with_params("https://www.tikwm.com/api/", &[("url", url)])
+            .map_err(|e| AppError::Download(format!("invalid TikWM query: {e}")))?;
+
+        let client = reqwest::Client::builder()
+            .timeout(Duration::from_secs(120))
+            .user_agent("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36")
+            .build()
+            .map_err(|e| AppError::Download(format!("failed to build http client: {e}")))?;
+
+        let resp = client
+            .get(api)
+            .send()
+            .await
+            .map_err(|e| AppError::Download(format!("TikWM request failed: {e}")))?;
+        let data: serde_json::Value = resp
+            .json()
+            .await
+            .map_err(|e| AppError::Download(format!("TikWM returned invalid JSON: {e}")))?;
+
+        if data.get("code").and_then(|c| c.as_i64()) != Some(0) {
+            let msg = data
+                .get("msg")
+                .and_then(|m| m.as_str())
+                .unwrap_or("unknown error");
+            return Err(AppError::Download(format!("TikWM error: {msg}")));
+        }
+
+        let play = data
+            .pointer("/data/play")
+            .and_then(|p| p.as_str())
+            .ok_or_else(|| AppError::Download("TikWM response missing data.play".to_string()))?;
+
+        let media = client
+            .get(play)
+            .header(reqwest::header::REFERER, "https://www.tiktok.com/")
+            .send()
+            .await
+            .map_err(|e| AppError::Download(format!("TikWM media download failed: {e}")))?;
+        if !media.status().is_success() {
+            return Err(AppError::Download(format!(
+                "TikWM media returned status {}",
+                media.status()
+            )));
+        }
+
+        let bytes = media
+            .bytes()
+            .await
+            .map_err(|e| AppError::Download(format!("TikWM media read failed: {e}")))?;
+        let path = output_dir.join("tiktok-fallback.mp4");
+        tokio::fs::write(&path, bytes)
+            .await
+            .map_err(|e| AppError::Download(format!("failed to write TikWM media: {e}")))?;
+        info!(path = %path.display(), "TikWM fallback media saved");
+        Ok(path)
     }
 
     async fn run_ytdlp(
@@ -140,12 +213,26 @@ impl Downloader {
         let effective_url = if url.contains("tiktok.com") {
             let resolved = self.resolve_one_redirect(url).await;
             Self::fix_tiktok_photo(&resolved)
+        } else if url.contains("instagram.com") {
+            Self::normalize_instagram(url)
         } else {
             url.to_string()
         };
 
-        self.run_ytdlp(&effective_url, &output_dir, &output_template_str)
+        match self
+            .run_ytdlp(&effective_url, &output_dir, &output_template_str)
             .await
+        {
+            Ok(path) => Ok(path),
+            Err(err) => {
+                if effective_url.contains("tiktok.com") {
+                    warn!(task_id, url = effective_url, error = %err, "yt-dlp failed, falling back to TikWM");
+                    self.tikwm_fallback(&effective_url, &output_dir).await
+                } else {
+                    Err(err)
+                }
+            }
+        }
     }
 
     pub async fn cleanup(&self, task_id: &str) -> anyhow::Result<()> {
