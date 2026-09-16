@@ -1,10 +1,59 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
-  <rect width="1200" height="630" fill="#0a0a0b"/>
-  <rect x="0" y="0" width="1200" height="4" fill="#e63946"/>
-  <text x="600" y="270" font-family="system-ui, sans-serif" font-size="72" font-weight="800" fill="#f5f5f7" text-anchor="middle" letter-spacing="-2">SongHunter</text>
-  <text x="600" y="340" font-family="system-ui, sans-serif" font-size="28" fill="#86868b" text-anchor="middle">descubra a música em qualquer link</text>
-  <circle cx="600" cy="450" r="40" fill="none" stroke="#e63946" stroke-width="3"/>
-  <path d="M582 430V400l30-5v22" fill="none" stroke="#e63946" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="578" cy="448" r="7" fill="#e63946"/>
-  <circle cx="608" cy="442" r="7" fill="#e63946"/>
+  <defs>
+    <radialGradient id="mar" cx="50%" cy="-15%" r="90%">
+      <stop offset="0%" stop-color="#6fd3ff" stop-opacity="0.16"/>
+      <stop offset="55%" stop-color="#6fd3ff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="ambar-glow" cx="86%" cy="112%" r="70%">
+      <stop offset="0%" stop-color="#ffb454" stop-opacity="0.14"/>
+      <stop offset="60%" stop-color="#ffb454" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="pontos" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="14" cy="14" r="1.1" fill="#82b4e1" opacity="0.16"/>
+    </pattern>
+    <linearGradient id="varredura" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffb454" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#ffb454" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="#0a1420"/>
+  <rect width="1200" height="630" fill="url(#mar)"/>
+  <rect width="1200" height="630" fill="url(#ambar-glow)"/>
+  <rect width="1200" height="630" fill="url(#pontos)"/>
+
+  <!-- radar -->
+  <g transform="translate(930 318)">
+    <circle r="196" fill="none" stroke="#82b4e1" stroke-opacity="0.18" stroke-width="2"/>
+    <circle r="142" fill="none" stroke="#82b4e1" stroke-opacity="0.14" stroke-width="1.5"/>
+    <circle r="86" fill="none" stroke="#82b4e1" stroke-opacity="0.12" stroke-width="1.5"/>
+    <line x1="-196" y1="0" x2="196" y2="0" stroke="#82b4e1" stroke-opacity="0.10" stroke-width="1.5"/>
+    <line x1="0" y1="-196" x2="0" y2="196" stroke="#82b4e1" stroke-opacity="0.10" stroke-width="1.5"/>
+    <path d="M0 0 L0 -196 A196 196 0 0 1 138.6 -138.6 Z" fill="url(#varredura)"/>
+    <path d="M0 0 L0 -196" stroke="#ffb454" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="-62" cy="-44" r="7" fill="#ffb454"/>
+    <circle cx="84" cy="58" r="5" fill="#ffb454" opacity="0.75"/>
+    <circle cx="36" cy="-120" r="4" fill="#ffb454" opacity="0.5"/>
+    <circle r="10" fill="#ffb454"/>
+  </g>
+
+  <!-- grafismo -->
+  <g transform="translate(88 92)">
+    <circle cx="17" cy="17" r="16" fill="none" stroke="#6fd3ff" stroke-opacity="0.6" stroke-width="2"/>
+    <circle cx="17" cy="17" r="9" fill="none" stroke="#6fd3ff" stroke-opacity="0.35" stroke-width="1.5"/>
+    <path d="M17 17 L17 1 A16 16 0 0 1 30.9 9 Z" fill="#ffb454" opacity="0.5"/>
+    <circle cx="17" cy="17" r="2.6" fill="#ffb454"/>
+    <text x="48" y="26" font-family="IBM Plex Mono" font-weight="600" font-size="21" letter-spacing="7" fill="#e9f2fa">SONGHUNTER</text>
+  </g>
+
+  <text x="88" y="292" font-family="Space Grotesk" font-weight="700" font-size="76" letter-spacing="-2" fill="#e9f2fa">cole o link.</text>
+  <text x="88" y="374" font-family="Space Grotesk" font-weight="700" font-size="76" letter-spacing="-2" fill="#ffb454">a gente caça a música.</text>
+
+  <g transform="translate(88 452)">
+    <line x1="0" y1="0" x2="56" y2="0" stroke="#6fd3ff" stroke-opacity="0.6" stroke-width="2"/>
+    <text x="74" y="7" font-family="IBM Plex Mono" font-size="21" fill="#8fa9c0">tiktok · youtube · instagram · x · soundcloud</text>
+  </g>
+
+  <text x="88" y="556" font-family="IBM Plex Mono" font-size="20" letter-spacing="2" fill="#5f7890">songhunter.wired.rs</text>
+  <text x="88" y="588" font-family="IBM Plex Mono" font-size="20" letter-spacing="2" fill="#5f7890">wired layer co.</text>
 </svg>
