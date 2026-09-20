@@ -4,7 +4,7 @@
 # (ver .github/workflows/deploy.yml). O runtime é Ubuntu 24.04 para casar com
 # a glibc do runner ubuntu-latest; o yt-dlp vem do pip (extractors atualizados
 # + suporte a impersonate via curl_cffi).
-FROM ubuntu:24.04 AS runtime
+FROM ubuntu:25.10 AS runtime
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
