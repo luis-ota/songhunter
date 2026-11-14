@@ -82,27 +82,20 @@ jobs:
           cache-to: type=gha,mode=max
 
   deploy:
-    needs: build
+    name: Deploy production (Coolify)
+    needs: [build]
     runs-on: ubuntu-latest
-    environment: production
     steps:
-      - name: Configure SSH
+      - name: Trigger Coolify deploy
         env:
-          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
-          KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+          COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
+          APP_UUIDS: "j1jmn6lutbqaky4pch5pryax"
         run: |
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
-          chmod 644 ~/.ssh/known_hosts
-
-      # A chave tem forced command no servidor (/usr/local/bin/deploy-songhunter).
-      # Nenhum comando remoto é aceito: a conexão só consegue executar o deploy.
-      - name: Deploy via forced command
-        env:
-          HOST: ${{ secrets.DEPLOY_HOST }}
-          USER: ${{ secrets.DEPLOY_USER }}
-        run: |
-          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -o BatchMode=yes "$USER@$HOST"
+          set -euo pipefail
+          for uuid in $APP_UUIDS; do
+            echo "Deploying $uuid"
+            curl -fsS -X POST \
+              -H "Authorization: Bearer $COOLIFY_TOKEN" \
+              "https://coolify.ther.social/api/v1/deploy?uuid=$uuid&force=true"
+            echo
+          done
