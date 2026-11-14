@@ -96,6 +96,6 @@ jobs:
             echo "Deploying $uuid"
             curl -fsS -X POST \
               -H "Authorization: Bearer $COOLIFY_TOKEN" \
-              "https://coolify.ther.social/api/v1/deploy?uuid=$uuid&force=true"
+              "https://coolify.wired.rs/api/v1/deploy?uuid=$uuid&force=true"
             echo
           done
